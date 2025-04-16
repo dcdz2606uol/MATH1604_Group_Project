@@ -36,9 +36,6 @@ if __name__ == "__main__":
 
 
 """
-MATH1604 Group Project - Interim Integration Script
-Team Member 4 (Team Leader)
-
 Current Capabilities:
 1. Validates all 25 respondent files
 2. Tests Team Member 1's answer extraction
