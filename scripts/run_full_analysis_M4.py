@@ -7,111 +7,125 @@ Orchestrates:
 2. Answer sequence extraction
 3. Statistical analysis and visualization
 """
-from data_extraction_M1 import extract_answers_sequence
+
+run_full_analysis_M4.py - Final Integration Script for Python Quiz Response Analysis
+
+
+import os
+import sys
+import time
+from datetime import datetime
+from data_extraction_M1 import extract_answers_sequence, write_answers_sequence
 from data_preparation_M2 import download_answer_files, collate_answer_files
 from data_analysis_M3 import generate_means_sequence, visualize_data
 
-def main():
+# Configuration
+CONFIG = {
+    'cloud_url': "https://example.com/quiz_data",
+    'num_respondents': 40,
+    'data_folder': "data",
+    'output_folder': "output",
+    'log_file': "analysis_log.txt"
+}
+
+def setup_environment():
+    """Create necessary directories and log file."""
+    os.makedirs(CONFIG['data_folder'], exist_ok=True)
+    os.makedirs(CONFIG['output_folder'], exist_ok=True)
+    with open(CONFIG['log_file'], 'w') as f:
+        f.write(f"Analysis Log - {datetime.now()}\n{'='*40}\n")
+
+def log_message(message):
+    """Log messages to file and console."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_entry = f"[{timestamp}] {message}"
+    print(log_entry)
+    with open(CONFIG['log_file'], 'a') as f:
+        f.write(log_entry + "\n")
+
+def generate_mock_data(num_files=5):
+    """Generate test files when real data isn't available."""
+    log_message("Generating mock data for testing...")
+    for i in range(1, num_files + 1):
+        file_path = os.path.join(CONFIG['data_folder'], f"answers_respondent_{i}.txt")
+        with open(file_path, 'w') as f:
+            for q in range(1, 101):
+                f.write(f"[Question {q}. Mock question {q}\n")
+                for opt in range(1, 5):
+                    if q % 4 == opt % 4:  # Simple pattern for testing
+                        f.write(f"[x] Answer {q}.{opt}\n")
+                    else:
+                        f.write(f"[ ] Answer {q}.{opt}\n")
+                f.write("\n")
+    log_message(f"Generated {num_files} mock respondent files")
+
+def validate_sequences(sequences):
+    """Validate extracted answer sequences."""
+    valid_sequences = []
+    for i, seq in enumerate(sequences, 1):
+        if seq is None:
+            log_message(f"Warning: No data for respondent {i}")
+            continue
+        if len(seq) != 100:
+            log_message(f"Warning: Invalid length for respondent {i} ({len(seq)} answers)")
+            continue
+        valid_sequences.append(seq)
+    return valid_sequences
+
+def run_full_analysis():
+    """Execute the complete analysis pipeline."""
+    start_time = time.time()
+    log_message("Starting complete analysis pipeline")
+    
     try:
-        # Step 1: Data Preparation
-        # Since files are in data/, skip download or mock it
-        download_answer_files(cloud_url="", path_to_data_folder="data/", respondent_index=25)  # 25 since there are 25 respondent files
+        # Phase 1: Data Preparation
+        log_message("Phase 1: Data Download and Collation")
+        try:
+            download_answer_files(CONFIG['cloud_url'], CONFIG['data_folder'], CONFIG['num_respondents'])
+        except Exception as e:
+            log_message(f"Download failed, using mock data: {str(e)}")
+            generate_mock_data()
         
-        # Collate all 25 respondent files
-        collate_answer_files(data_folder_path="data/")
+        collate_answer_files(CONFIG['data_folder'])
+        log_message("Data preparation complete")
+
+        # Phase 2: Data Extraction
+        log_message("Phase 2: Answer Sequence Extraction")
+        sequences = []
+        for i in range(1, CONFIG['num_respondents'] + 1):
+            file_path = os.path.join(CONFIG['data_folder'], f"answers_respondent_{i}.txt")
+            if os.path.exists(file_path):
+                seq = extract_answers_sequence(file_path)
+                sequences.append(seq)
+                write_answers_sequence(seq, i)
         
-        # Step 2: Analysis
-        means = generate_means_sequence("output/collated_answers.txt")
+        valid_sequences = validate_sequences(sequences)
+        log_message(f"Extracted {len(valid_sequences)} valid sequences")
+
+        # Phase 3: Data Analysis
+        log_message("Phase 3: Statistical Analysis and Visualization")
+        collated_path = os.path.join(CONFIG['output_folder'], "collated_answers.txt")
+        means = generate_means_sequence(collated_path)
+        log_message("Calculated mean answer values")
         
-        # Step 3: Visualization (scatter plot by default)
-        visualize_data("output/collated_answers.txt", n=1)  
-        
-    except FileNotFoundError as e:
-        print(f"Error: {e}. Check if data files exist in data/")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
+        visualize_data(collated_path, 1)  # Scatter plot
+        visualize_data(collated_path, 2)  # Line plot
+        log_message("Generated visualizations")
 
-if __name__ == "__main__":
-    main()
-
-
-"""
-Current Capabilities:
-1. Validates all 25 respondent files
-2. Tests Team Member 1's answer extraction
-3. Prepares for M2/M3 integration
-
-Pending Team Modules:
-- data_preparation_M2.py (collation)
-- data_analysis_M3.py (stats/visualization)
-"""
-from data_extraction_M1 import extract_answers_sequence
-import os
-import time
-
-def log_progress(message: str):
-    """Track progress with timestamps"""
-    print(f"[{time.strftime('%H:%M:%S')}] {message}")
-
-def validate_files():
-    """Verify all 25 respondent files exist and are readable"""
-    for i in range(1, 26):
-        path = f"data/answers_respondent_{i}.txt"
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"Missing file: {path}")
-        
-        # Quick format check using M1's parser
-        answers = extract_answers_sequence(path)
-        if len(answers) != 100 or not all(0 <= x <= 4 for x in answers):
-            raise ValueError(f"Invalid format in {path}")
-
-def mock_m2_functions():
-    """Placeholder stubs for Team Member 2's work"""
-    def download_answer_files(*args, **kwargs):
-        log_progress("M2 placeholder: Skipping download (using local files)")
-
-    def collate_answer_files(*args, **kwargs):
-        log_progress("M2 placeholder: Collation not yet implemented")
-        return True  # Pretend success
-
-    return download_answer_files, collate_answer_files
-
-def mock_m3_functions():
-    """Placeholder stubs for Team Member 3's work"""
-    def generate_means_sequence(*args, **kwargs):
-        log_progress("M3 placeholder: Returning mock means")
-        return [2.5] * 100  # Fake uniform distribution
-
-    def visualize_data(*args, **kwargs):
-        log_progress("M3 placeholder: No visualization available")
+        # Final Report
+        duration = time.time() - start_time
+        log_message(f"Analysis completed successfully in {duration:.2f} seconds")
         return True
 
-    return generate_means_sequence, visualize_data
+    except Exception as e:
+        log_message(f"Analysis failed: {str(e)}")
+        return False
 
 def main():
-    try:
-        log_progress("Starting validation...")
-        validate_files()
-        
-        # Load stubs or real implementations
-        download, collate = mock_m2_functions()
-        gen_means, visualize = mock_m3_functions()
-        
-        log_progress("Testing pipeline...")
-        download(cloud_url="", path_to_data_folder="data", respondent_index=25)
-        if collate("data"):
-            means = gen_means("output/collated_answers.txt")
-            visualize("output/collated_answers.txt", n=1)
-        
-        log_progress("✅ Ready for team integration")
-        print("\nPending implementations:")
-        print("- M2: Complete collate_answer_files()")
-        print("- M3: Implement generate_means_sequence() and visualize_data()")
-
-    except Exception as e:
-        log_progress(f"❌ Error: {str(e)}")
-        if isinstance(e, FileNotFoundError):
-            print("  → Check filenames match 'answers_respondent_[1-25].txt'")
+    """Main execution function."""
+    setup_environment()
+    if not run_full_analysis():
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
