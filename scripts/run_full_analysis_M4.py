@@ -22,7 +22,7 @@ from data_analysis_M3 import generate_means_sequence, visualize_data
 # Configuration
 CONFIG = {
     'cloud_url': "https://example.com/quiz_data",
-    'num_respondents': 40,
+    'num_respondents': 25,
     'data_folder': "data",
     'output_folder': "output",
     'log_file': "analysis_log.txt"
