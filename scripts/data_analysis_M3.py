@@ -3,8 +3,9 @@ import sys
 import time
 from datetime import datetime
 import matplotlib.pyplot as plt
-from team_member1_module import extract_answers_sequence
-from team_member2_module import generate_means_sequence
+from data_extraction_M1 import extract_answers_sequence, write_answers_sequence
+from data_preparation_M2 import download_answer_files, collate_answer_files
+from data_analysis_M3 import generate_means_sequence, visualize_data
 
 def generate_means_sequence(collated_answers_path):
     answer_sequences = extract_answers_sequence(collated_answers_path)
