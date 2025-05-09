@@ -8,7 +8,7 @@ def download_answer_files(cloud_url, save_folder, total_files):
 
     # Download each file
     for i in range(1, total_files + 1):
-        url = f"{cloud_url}/a{i}.txt"
+        url = f"{cloud_url}/answers_respondent_{i}.txt"
         file_name = f"answers_respondent_{i}.txt"
         file_path = os.path.join(save_folder, file_name)
 
