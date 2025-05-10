@@ -37,7 +37,7 @@ def collate_answer_files(folder_path):
                 content = f.read().strip()
                 out_file.write(content)
 
-            # Add separator unless it's the last file
+            # Only add a separator if it’s not the last file
             if i < len(files) - 1:
                 out_file.write("\n*\n")
             else:
