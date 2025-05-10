@@ -21,7 +21,7 @@ from data_analysis_M3 import generate_means_sequence, visualize_data
 
 # Configuration
 CONFIG = {
-    'cloud_url': "https://github.com/dcdz2606uol/MATH1604_Group_Project/tree/main/data",
+    'cloud_url': "https://raw.githubusercontent.com/dcdz2606uol/MATH1604_Group_Project/main/data",
     'num_respondents': 25,
     'data_folder': "data",
     'output_folder': "output",
@@ -158,4 +158,3 @@ if __name__ == "__main__":
    
 
    
-
